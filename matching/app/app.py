@@ -10,4 +10,4 @@ app = Flask(__name__)
 api = Api(app)
 
 from matching.api import ComputeMatch
-api.add_resource(ComputeMatch, '/')
+api.add_resource(ComputeMatch, '/compute-match')
