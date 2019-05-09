@@ -1,6 +1,9 @@
 from itertools import combinations
 
+from sqlalchemy import String, cast
+
 from matching.database import engine, individual, session
+
 
 def compute_match_with_score(individual_args: dict):
     """
@@ -22,19 +25,13 @@ def compute_match_with_score(individual_args: dict):
     score = None
     
     ssn = individual_args.get('ssn')
-    if ssn: 
-        ssn_last_four_digits = ssn[-4:]
-
-
     filters = {
         'last_name': individual_args.get('last_name'),
         'telephone': individual_args.get('telephone'),
         'gender_id': individual_args.get('gender_id'),
         'email_address': individual_args.get('email_address'),
         'mailing_address_id': individual_args.get('mailing_address_id'),
-        'ssn': individual_args.get('ssn'),
-        # 'ssn': like("%s{}".format(ssn_last_four_digits)) if ssn_last_four_digits else ssn,
-        # TODO: how to query for last four digits of SSN, and move the logic further upstream
+        'ssn': ssn,
     }
 
     potential_matches = session.query(individual).filter_by(
@@ -51,12 +48,21 @@ def compute_match_with_score(individual_args: dict):
             list_of_combos += list(map(dict, combinations(filters.items(), i)))
 
         for combo in list_of_combos:
-            match = potential_matches.filter_by(**combo)
+            combo_length_for_score = len(combo)
+            # Only consider the last 4 digits of SSN, if an SSN exists in individual_args.
+            if combo.get('ssn') and ssn:
+                del(combo['ssn'])
+                ssn_last_four_digits = ssn[-4:]
+                match = potential_matches.filter_by(**combo)\
+                                         .filter(cast(individual.c.ssn, String)\
+                                         .like('%{}'.format(ssn_last_four_digits)))
+            else:
+                match = potential_matches.filter_by(**combo)
 
             if match.first():
                 # TO TEST can a `match` have more than one Individual?
                 mci_id = match.first().mci_id
-                score += len(combo) * 0.1
+                score += combo_length_for_score * 0.1
                 break
 
     return mci_id, score
