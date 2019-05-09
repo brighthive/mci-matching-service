@@ -4,6 +4,17 @@ from sqlalchemy import String, cast
 
 from matching.database import engine, individual, session
 
+def filter_on_ssn(combo, potential_matches):
+    if combo.get('ssn'):
+        ssn_last_four_digits = combo.get('ssn')[-4:]
+        del(combo['ssn'])
+        match = potential_matches.filter_by(**combo)\
+                                 .filter(cast(individual.c.ssn, String)
+                                 .like('%{}'.format(ssn_last_four_digits)))
+    else:
+        match = potential_matches.filter_by(**combo)
+    
+    return match
 
 def compute_match_with_score(individual_args: dict):
     """
@@ -24,14 +35,13 @@ def compute_match_with_score(individual_args: dict):
     mci_id = None
     score = None
     
-    ssn = individual_args.get('ssn')
     filters = {
         'last_name': individual_args.get('last_name'),
         'telephone': individual_args.get('telephone'),
         'gender_id': individual_args.get('gender_id'),
         'email_address': individual_args.get('email_address'),
         'mailing_address_id': individual_args.get('mailing_address_id'),
-        'ssn': ssn,
+        'ssn': individual_args.get('ssn'),
     }
 
     potential_matches = session.query(individual).filter_by(
@@ -49,15 +59,7 @@ def compute_match_with_score(individual_args: dict):
 
         for combo in list_of_combos:
             combo_length_for_score = len(combo)
-            # Only consider the last 4 digits of SSN, if an SSN exists in individual_args.
-            if combo.get('ssn') and ssn:
-                del(combo['ssn'])
-                ssn_last_four_digits = ssn[-4:]
-                match = potential_matches.filter_by(**combo)\
-                                         .filter(cast(individual.c.ssn, String)\
-                                         .like('%{}'.format(ssn_last_four_digits)))
-            else:
-                match = potential_matches.filter_by(**combo)
+            match = filter_on_ssn(combo, potential_matches)
 
             if match.first():
                 # TO TEST can a `match` have more than one Individual?
