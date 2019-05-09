@@ -1,22 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import MetaData, Table, create_engine
 from sqlalchemy.orm import sessionmaker
 
-POSTGRES_USER = 'brighthive'
-POSTGRES_PASSWORD = 'test_password'
-POSTGRES_DATABASE = 'mci_dev'
-POSTGRES_HOSTNAME = 'localhost'
-POSTGRES_PORT = '5434'
-SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
-    POSTGRES_USER,
-    POSTGRES_PASSWORD,
-    POSTGRES_HOSTNAME,
-    POSTGRES_PORT,
-    POSTGRES_DATABASE
-)
-
 # Instantiate the engine – the "home base" for the database
-engine = create_engine(SQLALCHEMY_DATABASE_URI)
+from matching.config import ConfigurationFactory
+config = ConfigurationFactory.from_env()
+engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
 
 # Pass the engine to the sessionmaker (a factory for creating sessions, 
 # i.e., a object that manages interactions with the database) 

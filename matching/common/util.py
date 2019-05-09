@@ -58,7 +58,6 @@ def compute_match_with_score(individual_args: dict):
         # thanks itertools! 
         # https://stackoverflow.com/questions/11905573/getting-all-combinations-of-key-value-pairs-in-python-dict
         filter_combinations = list(map(dict, combinations(filters.items(), 5)))
-        import pdb; pdb.set_trace()
 
         for filter_combo in filter_combinations:
             strong_match = session.query(individual).filter_by(

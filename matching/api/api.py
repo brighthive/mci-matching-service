@@ -19,6 +19,10 @@ individual_args = {
 }
 
 class ComputeMatch(Resource):
+    # Keeping this as a sanity-check placeholder, for now.
+    def get(self):
+        return {'hello': 'world'}
+
     @use_args(individual_args)
     def post(self, args):
         mci_id, score = compute_match_with_score(args)
