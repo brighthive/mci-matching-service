@@ -5,6 +5,9 @@ from sqlalchemy import String, cast
 from matching.database import engine, individual, session
 
 def filter_on_ssn(combo, potential_matches):
+    '''
+    Helper function used in `compute_match_with_score`.
+    '''
     if combo.get('ssn'):
         ssn_last_four_digits = combo.get('ssn')[-4:]
         del(combo['ssn'])
@@ -17,7 +20,7 @@ def filter_on_ssn(combo, potential_matches):
     return match
 
 def compute_match_with_score(individual_args: dict):
-    """
+    '''
     This function determines (1) if incoming data for an Individual
     can be reasonably matched with an existing entry, and (2) the
     score assigned to the likelihood of matching. 
@@ -30,7 +33,7 @@ def compute_match_with_score(individual_args: dict):
     `first_name` and `date_of_birth`.
 
     :returns: an Individual and a score of the match likelihood (or None) 
-    """
+    '''
 
     mci_id = None
     score = None
