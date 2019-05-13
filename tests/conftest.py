@@ -39,14 +39,26 @@ def setup_postgres_container():
             name=container_name,
             ports={'5432/tcp': config.POSTGRES_PORT},
             environment=db_environment,
-            tmpfs={'/tmp/mci_models.tar': ''},
+            # tmpfs={'/tmp/mci_models.tar': ''},
         )
 
-        data = open('/Users/reginacompton/brighthive/mci-matching-service/tests/mci_models.tar', 'rb').read()
+
+        # 1. RUN COMMAND AS SUBPROCESS
+        # import subprocess
+        # command = 'cat /Users/reginacompton/Downloads/colorado_sample_mci.sql | docker exec -i postgres_test psql -U brighthive -d mci_dev'
+        # p = subprocess.Popen(command, shell=True)
+
+
+        # 2. ADD DUMP TO CONTAINER AND RESTORE
+        # data = open('/Users/reginacompton/brighthive/mci-matching-service/tests/mci_models.tar', 'rb').read()
         
-        psql_container = docker_client.containers.get('postgres_test')
-        psql_container.put_archive('/tmp/mci_models.tar', data)
-        psql_container.exec_run('pg_restore -U brighthive -Ft /tmp/mci_models.tar')
+        # psql_container = docker_client.containers.get('postgres_test')
+        # psql_container.put_archive('/tmp/mci_models.tar', data)
+        # psql_container.exec_run('pg_restore -U brighthive -Ft /tmp/mci_models.tar')
+
+
+        # 3. USE EXEC_RUN
+        # psql_container.exec_run('cat /tmp/mci_models.tar | psql -U brighthive -d mci_dev')
 
     except Exception as err:
         print(err)
