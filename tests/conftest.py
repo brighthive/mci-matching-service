@@ -39,15 +39,18 @@ def setup_postgres_container():
             name=container_name,
             ports={'5432/tcp': config.POSTGRES_PORT},
             environment=db_environment,
+            tmpfs={'/tmp/mci_models.tar': ''},
         )
-        import pdb; pdb.set_trace()
+
+        data = open('/Users/reginacompton/brighthive/mci-matching-service/tests/mci_models.tar', 'rb').read()
+        
+        psql_container = docker_client.containers.get('postgres_test')
+        psql_container.put_archive('/tmp/mci_models.tar', data)
+        psql_container.exec_run('pg_restore -U brighthive -Ft /tmp/mci_models.tar')
+
     except Exception as err:
         print(err)
         print('Unable to start container...')
-
-    # TODO: Set-up a database.
-    # Option – restore a db dump?
-    # Option – somehow run the migrations from the MCI repo in this repo?
     
 def teardown_postgres_container():
     """Teardown Dockerr PostgreSQL container.
