@@ -1,0 +1,13 @@
+version: '3.5'
+services:
+    mci:
+        image: brighthive/mci-matching-service:1.0.0
+        ports:
+            - "8002:8000"
+        environment:
+            - APP_ENV=DEVELOPMENT
+        networks:
+            - mci_network
+networks:
+    mci_network:
+        external: true
