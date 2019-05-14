@@ -14,7 +14,8 @@ class DevelopmentConfig(Config):
     POSTGRES_USER = 'brighthive'
     POSTGRES_PASSWORD = 'test_password'
     POSTGRES_DATABASE = 'mci_dev'
-    POSTGRES_HOSTNAME = '0.0.0.0'
+    # POSTGRES_HOSTNAME = 'localhost'
+    POSTGRES_HOSTNAME = 'masterclientindex_postgres_mci_1' # Name of the container on the mci_network
     POSTGRES_PORT = '5432'
     SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
         POSTGRES_USER,

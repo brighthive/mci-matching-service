@@ -3,8 +3,9 @@ services:
     mci:
         image: brighthive/mci-matching-service:1.0.0
         ports:
-            - "8002:8000"
+            - "9000:8000"
         environment:
+            # How should this work with multiple environments?
             - APP_ENV=DEVELOPMENT
         networks:
             - mci_network
