@@ -9,6 +9,8 @@ services:
             - APP_ENV=DEVELOPMENT
         networks:
             - mci_network
+        stdin_open: true
+        tty: true
 networks:
     mci_network:
         external: true

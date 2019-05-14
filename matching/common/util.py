@@ -35,16 +35,17 @@ def compute_match_with_score(individual_args: dict):
     :returns: an Individual and a score of the match likelihood (or None) 
     '''
 
-    mci_id = None
-    score = None
-    
+    mci_id = ''
+    score = ''
+    gender_id = individual_args.get('gender_id')
+    mailing_address_id = individual_args.get('mailing_address_id')
     filters = {
-        'last_name': individual_args.get('last_name'),
-        'telephone': individual_args.get('telephone'),
-        'gender_id': individual_args.get('gender_id'),
-        'email_address': individual_args.get('email_address'),
-        'mailing_address_id': individual_args.get('mailing_address_id'),
-        'ssn': individual_args.get('ssn'),
+        'last_name': individual_args.get('last_name', None) or None,
+        'telephone': individual_args.get('telephone', None) or None,
+        'gender_id': int(gender_id) if gender_id else None,
+        'email_address': individual_args.get('email_address', None) or None,
+        'mailing_address_id': int(mailing_address_id) if mailing_address_id else None,
+        'ssn': individual_args.get('ssn', None) or None,
     }
 
     potential_matches = session.query(individual).filter_by(
@@ -53,6 +54,7 @@ def compute_match_with_score(individual_args: dict):
     )
 
     if potential_matches.first():
+        
         score = 0.4
         list_of_combos = []
         # Find all filter combinations.
@@ -68,6 +70,7 @@ def compute_match_with_score(individual_args: dict):
                 # TO TEST can a `match` have more than one Individual?
                 mci_id = match.first().mci_id
                 score += combo_length_for_score * 0.1
+                
                 break
 
     return mci_id, score
