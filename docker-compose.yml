@@ -1,0 +1,18 @@
+version: '3.5'
+services:
+    mci:
+        image: brighthive/mci-matching-service:1.0.0
+        ports:
+            - "9000:8000"
+        environment:
+            # TODO: Create a docker-compose.yml for development only.
+            - APP_ENV=DEVELOPMENT
+        networks:
+            # How can we be sure that this network exists?
+            - mci_network
+        # https://blog.lucasferreira.org/howto/2017/06/03/running-pdb-with-docker-and-gunicorn.html
+        # stdin_open: true
+        # tty: true
+networks:
+    mci_network:
+        external: true

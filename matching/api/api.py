@@ -1,22 +1,37 @@
 '''
 This module provides the POST endpoint for finding matches.
 '''
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
+from webargs import fields
+from webargs.flaskparser import use_args
+
+from matching.common.util import compute_match_with_score
+
+individual_args = {
+    "mci_id": fields.Str(), 
+    "vendor_id": fields.Str(), 
+    "ssn": fields.Str(), 
+    "registration_date": fields.Str(), 
+    "first_name": fields.Str(), 
+    "middle_name": fields.Str(), 
+    "last_name": fields.Str(),
+    "date_of_birth": fields.Str(), 
+    "email_address": fields.Str(), 
+    "telephone": fields.Str(), 
+    "mailing_address_id": fields.Str(), 
+    "gender_id": fields.Str(), 
+    "education_level_id": fields.Str(), 
+    "employment_status_id": fields.Str(), 
+    "source_id": fields.Str()
+}
 
 class ComputeMatch(Resource):
-    def post(self):
-        '''
-        Integrate compute_mci_threshold here!
-        This resource should accept JSON with the Individual data, e.g., dob, 
-        first_name, last_name, etc. Then, it will parse the data, do the calculation, and
-        return a result.
-        '''
-        # https://flask-restful.readthedocs.io/en/0.3.5/quickstart.html#full-example
-        parser = reqparse.RequestParser()
-        parser.add_argument('first_name')
-        args = parser.parse_args()
+    # Keeping this as a sanity-check placeholder, for now.
+    def get(self):
+        return {'hello': 'world'}
 
-        # for testing that the POST behaves as expected
-        result = {'match': args['first_name'] , 'score': ''}
+    @use_args(individual_args)
+    def post(self, args):
+        mci_id, score = compute_match_with_score(args)
         
-        return result, 201
+        return {'mci_id': mci_id, 'score': score}, 201

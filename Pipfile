@@ -5,11 +5,18 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+autopep8 = "*"
+docker = "*"
+pytest-flask = "*"
 
 [packages]
 flask-restful = "*"
 flask = "*"
 gunicorn = "*"
+webargs = "*"
+flask-sqlalchemy = "*"
+sqlalchemy = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.7"
