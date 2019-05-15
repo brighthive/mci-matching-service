@@ -5,12 +5,14 @@ services:
         ports:
             - "9000:8000"
         environment:
-            # How should this work with multiple environments?
+            # TODO: Create a docker-compose.yml for development only.
             - APP_ENV=DEVELOPMENT
         networks:
+            # How can we be sure that this network exists?
             - mci_network
-        stdin_open: true
-        tty: true
+        # https://blog.lucasferreira.org/howto/2017/06/03/running-pdb-with-docker-and-gunicorn.html
+        # stdin_open: true
+        # tty: true
 networks:
     mci_network:
         external: true

@@ -1,4 +1,3 @@
-from config.config import ConfigurationFactory
 from matching.app import app as application
 
 if __name__ == '__main__':
