@@ -25,12 +25,13 @@ def compute_match_with_score(individual_args: dict):
     can be reasonably matched with an existing entry, and (2) the
     score assigned to the likelihood of matching. 
 
-    Implicit in this logic: the `first_name` and `last_name` are weighted at 0.2 (or 0.4 together)
-    and each remaining field are weighted at 0.1. Note! The precise weights for these fields
-    will be fine tuned, as we come to understand the data better.
+    The `last_name` and `date_of_birth` are weighted at 0.2 (or 0.4 together)
+    and each remaining field is weighted at 0.15, 0.1, or 0.05 (with `gender_id` having the lowest weight). 
+    Note! The precise weights for these fields will be fine tuned, as we come 
+    to understand the data better.
 
     :param individual_args: a dict of Individual data that includes, at minimum, a
-    `first_name` and `date_of_birth`.
+    `last_name` and `date_of_birth`.
 
     :returns: an Individual and a score of the match likelihood (or None) 
     '''
@@ -40,21 +41,29 @@ def compute_match_with_score(individual_args: dict):
     gender_id = individual_args.get('gender_id')
     mailing_address_id = individual_args.get('mailing_address_id')
     filters = {
-        'last_name': individual_args.get('last_name', None) or None,
+        'first_name': individual_args.get('first_name', None) or None,
         'telephone': individual_args.get('telephone', None) or None,
-        'gender_id': int(gender_id) if gender_id else None,
         'email_address': individual_args.get('email_address', None) or None,
         'mailing_address_id': int(mailing_address_id) if mailing_address_id else None,
         'ssn': individual_args.get('ssn', None) or None,
+        'gender_id': int(gender_id) if gender_id else None,
+    }
+
+    weights = {
+        'first_name': 0.15,
+        'telephone': 0.1,
+        'email_address': 0.1,
+        'mailing_address_id': 0.1,
+        'ssn': 0.1,
+        'gender_id': 0.05,
     }
 
     potential_matches = session.query(individual).filter_by(
-        first_name=individual_args['first_name'],
+        last_name=individual_args['last_name'],
         date_of_birth=individual_args['date_of_birth']
     )
 
     if potential_matches.first():
-        
         score = 0.4
         list_of_combos = []
         # Find all filter combinations.
@@ -67,10 +76,10 @@ def compute_match_with_score(individual_args: dict):
             match = filter_on_ssn(combo, potential_matches)
 
             if match.first():
-                # TO TEST can a `match` have more than one Individual?
+                # TO TEST: in what cases can the `match` queryset have more than one Individual?
                 mci_id = match.first().mci_id
-                score += combo_length_for_score * 0.1
-                
+                for filter_name in combo.keys():
+                    score += weights[filter_name]
                 break
 
     return mci_id, score
