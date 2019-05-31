@@ -60,23 +60,48 @@ class PostgreSQLContainer(object):
                 tmpfs={'/tmp/mci_models.tar': ''},
             )
 
-            # 1. RUN COMMAND AS SUBPROCESS
-            # import subprocess
-            # command = 'cat /Users/reginacompton/Downloads/colorado_sample_mci.sql | docker exec -i postgres_test psql -U brighthive -d mci_dev'
-            # p = subprocess.Popen(command, shell=True)
 
-            # 2. ADD DUMP TO CONTAINER AND RESTORE
-            # https: // gist.github.com/zbyte64/6800eae10ce082bb78f0b7a2cca5cbc2
+            import os
+            from flask import Flask
+            from flask_migrate import upgrade
+            from flask_migrate import Migrate
 
-            # data = open('/Users/reginacompton/brighthive/mci-matching-service/tests/mci_models.dump', 'rb').read()
+            # Made possible by: pipenv install ../master-client-index/dist/mci-1.0.tar.gz
+            from mci import db
+            
+            # Borrowed from: https://github.com/pallets/flask/blob/master/tests/conftest.py#L61
+            app = Flask("flask_test", root_path=os.path.dirname(__file__))
 
-            # psql_container = self.docker_client.containers.get('postgres_test')
+            migrate = Migrate(app, db)
+            
+            app.config.from_mapping(
+                TESTING = True,
+                SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
+                    'brighthive',
+                    'test_password',
+                    'localhost',
+                    5436,
+                    'mci_dev')
+            )
+            
+            with app.app_context():
+                
 
-            # psql_container.put_archive(path='/tmp', data=data)
-            # psql_container.exec_run('pg_restore -U brighthive -Ft /tmp/mci_models.tar')
+                path_to_virtual_env = os.environ['VIRTUAL_ENV']
+                # N.b, this path makes sense on my machine, only...
+                migrations_dir = os.path.join(
+                            path_to_virtual_env, 'lib/python3.7/site-packages', 'mci', 'db', 'migrations')
 
-            # 3. USE EXEC_RUN
-            # psql_container.exec_run('cat /tmp/mci_models.tar | psql -U brighthive -d mci_dev')
+                # TODO: Wait? Or while loop?
+                import time
+                time.sleep(2)
+
+                upgrade(directory=migrations_dir)
+
+            # A container with tables! Ready for population with fixtures!
+            psql_container = self.docker_client.containers.get('postgres_test')    
+
+
 
         except Exception as err:
             print(err)

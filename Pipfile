@@ -17,6 +17,7 @@ webargs = "*"
 flask-sqlalchemy = "*"
 sqlalchemy = "*"
 psycopg2-binary = "*"
+mci = {path = "./../master-client-index/dist/mci-1.0.tar.gz"}
 
 [requires]
 python_version = "3.7"
