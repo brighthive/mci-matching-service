@@ -2,17 +2,19 @@ from itertools import combinations
 
 from sqlalchemy import String, cast
 
-from matching.database import engine, individual, session
+from matching.database import init_individual_table, init_db_session
 
-def filter_on_ssn(combo, potential_matches):
+def filter_on_ssn(combo, potential_matches, individual_table):
     '''
     Helper function used in `compute_match_with_score`.
     '''
+
     if combo.get('ssn'):
         ssn_last_four_digits = combo.get('ssn')[-4:]
-        del(combo['ssn'])
-        match = potential_matches.filter_by(**combo)\
-                                 .filter(cast(individual.c.ssn, String)
+        combo_copy = combo.copy() # Do no modify combo object.
+        del(combo_copy['ssn'])
+        match = potential_matches.filter_by(**combo_copy)\
+                                 .filter(cast(individual_table.c.ssn, String)
                                  .like('%{}'.format(ssn_last_four_digits)))
     else:
         match = potential_matches.filter_by(**combo)
@@ -36,6 +38,8 @@ def compute_match_with_score(individual_args: dict):
     :returns: an Individual and a score of the match likelihood (or None) 
     '''
 
+    session = init_db_session()
+    individual_table = init_individual_table()
     mci_id = ''
     score = ''
     gender_id = individual_args.get('gender_id')
@@ -58,7 +62,7 @@ def compute_match_with_score(individual_args: dict):
         'gender_id': 0.05,
     }
 
-    potential_matches = session.query(individual).filter_by(
+    potential_matches = session.query(individual_table).filter_by(
         last_name=individual_args['last_name'],
         date_of_birth=individual_args['date_of_birth']
     )
@@ -72,8 +76,7 @@ def compute_match_with_score(individual_args: dict):
             list_of_combos += list(map(dict, combinations(filters.items(), i)))
 
         for combo in list_of_combos:
-            combo_length_for_score = len(combo)
-            match = filter_on_ssn(combo, potential_matches)
+            match = filter_on_ssn(combo, potential_matches, individual_table)
 
             if match.first():
                 # TO TEST: in what cases can the `match` queryset have more than one Individual?

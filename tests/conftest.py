@@ -1,10 +1,19 @@
-import time
-from io import BytesIO
 import os
 import subprocess
+import time
+from io import BytesIO
+from time import sleep
 
 import docker
 import pytest
+from flask import Flask
+from flask_migrate import Migrate, upgrade
+
+from matching import app as application
+from mci_database import db
+
+MAX_RETRIES = 10
+SLEEP = 2
 
 class PostgreSQLContainer(object):
     """A PostgreSQL Container Object.
@@ -22,76 +31,84 @@ class PostgreSQLContainer(object):
         self.docker_client = docker.from_env()
         self.postgres_image = "postgres:11.2"
         self.container_name = "postgres_test"
+        self.postgres_user = "brighthive"
+        self.postgres_password = "test_password"
+        self.postgres_db = "mci_dev"
 
     def setup_postgres_container(self):
         """Setup Docker PostgreSQL container.
         Spins up a Docker PostgreSQL container for testing.
         """
-        # cleanup old containers
         try:
-            container_to_clean = self.docker_client.containers.get(self.container_name)
-            container_to_clean.stop()
-            container_to_clean.remove()
+            self.teardown_postgres_container()
         except docker.errors.NotFound:
-            print('Container not found.')
-        # download Docker PostgreSQL image for unit testing only
-        try:
-            print('Launching Docker PostgreSQL Container...')
-            self.docker_client.images.pull(self.postgres_image)
-        except Exception as err:
-            print(err)
-            print('Failed to retrieve PostgreSQL image!')
+            print('Container not found!')
 
-        # launch Docker PostgreSQL image for unit testing only
-        db_environment = [
-            'POSTGRES_USER={}'.format('brighthive'),
-            'POSTGRES_PASSWORD={}'.format('test_password'),
-            'POSTGRES_DB={}'.format('mci_dev')
-        ]
+        self.docker_client.images.pull(self.postgres_image)
 
-        try:
-            self.docker_client.containers.run(
-                self.postgres_image,
-                detach=True,
-                auto_remove=True,
-                name=self.container_name,
-                ports={'5432/tcp': '5436'},
-                environment=db_environment,
-                tmpfs={'/tmp/mci_models.tar': ''},
-            )
+        self.docker_client.containers.run(
+            self.postgres_image,
+            detach=True,
+            auto_remove=True,
+            name=self.container_name,
+            ports={'5432/tcp': '5436'},
+            environment=[
+                'POSTGRES_USER={}'.format(self.postgres_user),
+                'POSTGRES_PASSWORD={}'.format(self.postgres_password),
+                'POSTGRES_DB={}'.format(self.postgres_db)
+            ],
+            tmpfs={'/tmp/mci_models.tar': ''},
+        )
+        
+        # Borrowed from: https://github.com/pallets/flask/blob/master/tests/conftest.py#L61
+        app = Flask("flask_test", root_path=os.path.dirname(__file__))
 
-            # 1. RUN COMMAND AS SUBPROCESS
-            # import subprocess
-            # command = 'cat /Users/reginacompton/Downloads/colorado_sample_mci.sql | docker exec -i postgres_test psql -U brighthive -d mci_dev'
-            # p = subprocess.Popen(command, shell=True)
+        migrate = Migrate(app, db)
+        
+        app.config.from_mapping(
+            TESTING = True,
+            SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
+                self.postgres_user,
+                self.postgres_password,
+                'localhost',
+                5436,
+                self.postgres_db)
+        )
+        
+        applied_migrations = False
+        retries = 0
 
-            # 2. ADD DUMP TO CONTAINER AND RESTORE
-            # https: // gist.github.com/zbyte64/6800eae10ce082bb78f0b7a2cca5cbc2
+        with app.app_context():
+            # The migrations repo resides in the virtual env.
+            # Specifically, Pipenv installs the mci-database repo in the `src` directory,
+            # since the Pipfile marks it as "editable."
+            path_to_virtual_env = os.environ['VIRTUAL_ENV']
+            migrations_dir = os.path.join(
+                path_to_virtual_env, 'src', 'mci-database', 'mci_database', 'db', 'migrations')
 
-            # data = open('/Users/reginacompton/brighthive/mci-matching-service/tests/mci_models.dump', 'rb').read()
+            while retries < MAX_RETRIES and applied_migrations is False:
+                print('Attempting to apply migrations ({} of {})...'.format(
+                    retries + 1, MAX_RETRIES))
+                try:
+                    # apply the migrations
+                    upgrade(directory=migrations_dir)
+                    applied_migrations = True
+                except Exception:
+                    retries += 1
+                    sleep(SLEEP)
 
-            # psql_container = self.docker_client.containers.get('postgres_test')
+        # A container with tables! Ready for population with fixtures!
+        psql_container = self.docker_client.containers.get('postgres_test')    
 
-            # psql_container.put_archive(path='/tmp', data=data)
-            # psql_container.exec_run('pg_restore -U brighthive -Ft /tmp/mci_models.tar')
-
-            # 3. USE EXEC_RUN
-            # psql_container.exec_run('cat /tmp/mci_models.tar | psql -U brighthive -d mci_dev')
-
-        except Exception as err:
-            print(err)
-            print('Unable to start container...')
 
     def teardown_postgres_container(self):
         """Teardown Dockerr PostgreSQL container.
         Spins down the Docker PostgreSQL testing container.
         """
-        print('Tearing Down Docker PostgreSQL Container...')
-        try:
-            container = self.docker_client.containers.get(self.container_name)
-            container.stop()
-        except Exception:
-            print('Unable to stop container...'.format(self.container_name))
+        print('Stopping and removing Docker PostgreSQL Container...')
+        container_to_clean = self.docker_client.containers.get(
+            self.container_name)
+        container_to_clean.stop()
 
 
 @pytest.fixture()
@@ -100,11 +117,39 @@ def psql_docker():
     return PostgreSQLContainer()
 
 
+@pytest.fixture()
+def individual_data(psql_docker):    
+    individual_data = {
+        'mci_id': '1qaz2wsx3edc',
+        'ssn': '123456789',
+        'first_name': 'George',
+        'last_name': 'Handel',
+        'middle_name': 'Frideric',
+        'date_of_birth': '1985-01-01',
+        'email_address': 'handel@hotmail.com',
+        'telephone': '123-456-7890',
+        'gender_id': '1',
+        'mailing_address_id': '1',
+    }
+
+    return individual_data
+
+
+@pytest.fixture
+def address_insert():
+    insert_statement = '''
+    INSERT INTO address (address, city, state, postal_code, country) 
+    VALUES ('123 Main St', 'City', 'State', '12345', 'US')
+    '''
+
+    return insert_statement
+
+
+@pytest.fixture
+def gender_insert():
+    return "INSERT INTO gender (gender) VALUES ('woman')"
+
+
 @pytest.fixture
 def app(psql_docker):
-    # Set up existing psql container, before running app.
-    psql_docker.setup_postgres_container()
-
-    from matching import app as application
-
     return application
