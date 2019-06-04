@@ -9,6 +9,7 @@ import pytest
 from flask import Flask
 from flask_migrate import Migrate, upgrade
 
+from matching import app as application
 from mci_database import db
 
 MAX_RETRIES = 10
@@ -41,10 +42,7 @@ class PostgreSQLContainer(object):
         try:
             self.teardown_postgres_container()
         except docker.errors.NotFound:
-            print('Container not found.')
-        except docker.errors.APIError:
-            sleep(SLEEP)
-            self.teardown_postgres_container()
+            print('Container not found!')
 
         self.docker_client.images.pull(self.postgres_image)
 
@@ -111,7 +109,6 @@ class PostgreSQLContainer(object):
         container_to_clean = self.docker_client.containers.get(
             self.container_name)
         container_to_clean.stop()
-        container_to_clean.remove()
 
 
 @pytest.fixture()
@@ -119,8 +116,9 @@ def psql_docker():
     """Database container."""
     return PostgreSQLContainer()
 
+
 @pytest.fixture()
-def individual_data():
+def individual_data(psql_docker):    
     individual_data = {
         'mci_id': '1qaz2wsx3edc',
         'ssn': '123456789',
@@ -130,16 +128,28 @@ def individual_data():
         'date_of_birth': '1985-01-01',
         'email_address': 'handel@hotmail.com',
         'telephone': '123-456-7890',
+        'gender_id': '1',
+        'mailing_address_id': '1',
     }
 
     return individual_data
 
 
 @pytest.fixture
+def address_insert():
+    insert_statement = '''
+    INSERT INTO address (address, city, state, postal_code, country) 
+    VALUES ('123 Main St', 'City', 'State', '12345', 'US')
+    '''
+
+    return insert_statement
+
+
+@pytest.fixture
+def gender_insert():
+    return "INSERT INTO gender (gender) VALUES ('woman')"
+
+
+@pytest.fixture
 def app(psql_docker):
-    # Set up existing psql container, before running app.
-    # psql_docker.setup_postgres_container()
-
-    from matching import app as application
-
     return application
