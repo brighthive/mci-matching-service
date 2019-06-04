@@ -2,12 +2,14 @@ from itertools import combinations
 
 from sqlalchemy import String, cast
 
-from matching.database import engine, individual, session
+from matching.database import init_individual_table, init_db_session
 
 def filter_on_ssn(combo, potential_matches):
     '''
     Helper function used in `compute_match_with_score`.
     '''
+    individual = init_individual_table()
+
     if combo.get('ssn'):
         ssn_last_four_digits = combo.get('ssn')[-4:]
         del(combo['ssn'])
@@ -35,7 +37,8 @@ def compute_match_with_score(individual_args: dict):
 
     :returns: an Individual and a score of the match likelihood (or None) 
     '''
-
+    individual = init_individual_table()
+    session = init_db_session()
     mci_id = ''
     score = ''
     gender_id = individual_args.get('gender_id')

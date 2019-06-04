@@ -138,7 +138,7 @@ def individual_data():
 @pytest.fixture
 def app(psql_docker):
     # Set up existing psql container, before running app.
-    psql_docker.setup_postgres_container()
+    # psql_docker.setup_postgres_container()
 
     from matching import app as application
 
