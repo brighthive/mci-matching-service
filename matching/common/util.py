@@ -37,7 +37,6 @@ def compute_match_with_score(individual_args: dict):
 
     :returns: an Individual and a score of the match likelihood (or None) 
     '''
-
     session = init_db_session()
     individual_table = init_individual_table()
     mci_id = ''
@@ -48,9 +47,9 @@ def compute_match_with_score(individual_args: dict):
         'first_name': individual_args.get('first_name', None) or None,
         'telephone': individual_args.get('telephone', None) or None,
         'email_address': individual_args.get('email_address', None) or None,
-        'mailing_address_id': int(mailing_address_id) if mailing_address_id else None,
+        'mailing_address_id': individual_args.get('mailing_address_id') or None,
         'ssn': individual_args.get('ssn', None) or None,
-        'gender_id': int(gender_id) if gender_id else None,
+        'gender_id': individual_args.get('gender_id') or None,
     }
 
     weights = {
