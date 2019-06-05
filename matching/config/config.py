@@ -14,10 +14,11 @@ class DevelopmentConfig(Config):
     POSTGRES_USER = 'brighthive'
     POSTGRES_PASSWORD = 'test_password'
     POSTGRES_DATABASE = 'mci_dev'
-    POSTGRES_HOSTNAME = 'localhost'
-    POSTGRES_PORT = '5436'
-    # POSTGRES_HOSTNAME = 'masterclientindex_postgres_mci_1' # Name of the container on the mci_network
-    # POSTGRES_PORT = '5432'
+    POSTGRES_PORT = '5432'
+    # POSTGRES_HOSTNAME = 'localhost' 
+    POSTGRES_HOSTNAME = 'docker_postgres_mci_1'
+    # If the matching-service is running in a Docker container, then connect to the 
+    # mci psql container, rather than localhost. 
     SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
         POSTGRES_USER,
         POSTGRES_PASSWORD,
@@ -38,7 +39,7 @@ class TestConfig(Config):
     POSTGRES_PASSWORD = 'test_password'
     POSTGRES_DATABASE = 'mci_dev'
     POSTGRES_HOSTNAME = 'localhost'
-    POSTGRES_PORT = '5436'
+    POSTGRES_PORT = '5436'  # Do not use 5432, since it may be allocated.
     SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
         POSTGRES_USER,
         POSTGRES_PASSWORD,

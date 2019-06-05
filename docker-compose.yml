@@ -11,8 +11,8 @@ services:
             # How can we be sure that this network exists?
             - mci_network
         # https://blog.lucasferreira.org/howto/2017/06/03/running-pdb-with-docker-and-gunicorn.html
-        # stdin_open: true
-        # tty: true
+        stdin_open: true
+        tty: true
 networks:
     mci_network:
         external: true

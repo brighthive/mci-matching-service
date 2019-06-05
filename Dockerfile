@@ -3,6 +3,7 @@ WORKDIR /mci-matching-service
 ADD Pipfile Pipfile
 ADD Pipfile.lock Pipfile.lock
 RUN apt-get update \
+    && apt-get install -y git \
     && apt-get install -y gcc \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --upgrade pip && pip install pipenv && pipenv install --system \
