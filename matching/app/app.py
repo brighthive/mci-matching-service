@@ -28,6 +28,7 @@ def cleanup(resp_or_exc):
 	This decorator function ensures that Sessions are removed at the end of a request.
 
 	References:
-	- 
+	- https://docs.sqlalchemy.org/en/13/orm/contextual.html#using-thread-local-scope-with-web-applications
+	- https://dev.to/nestedsoftware/flask-and-sqlalchemy-without-the-flask-sqlalchemy-extension-3cf8
     '''
     Session.remove()

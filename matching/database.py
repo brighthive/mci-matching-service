@@ -1,6 +1,3 @@
-from contextlib import contextmanager
-from flask_sqlalchemy import SQLAlchemy
-from flask import g
 from sqlalchemy import MetaData, Table, create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -18,6 +15,7 @@ def init_individual_table():
     - http://flask.pocoo.org/docs/1.0/patterns/sqlalchemy/#sql-abstraction-layer
     - https://docs.sqlalchemy.org/en/13/core/metadata.html
     '''
+
     metadata = MetaData(bind=engine)
     individual = Table('individual', metadata, autoload=True)
 
