@@ -10,6 +10,7 @@ from flask import Flask
 from flask_migrate import Migrate, upgrade
 
 from matching import app as application
+from matching.config import TestConfig as config
 from mci_database import db
 
 MAX_RETRIES = 10
@@ -31,9 +32,6 @@ class PostgreSQLContainer(object):
         self.docker_client = docker.from_env()
         self.postgres_image = "postgres:11.2"
         self.container_name = "postgres_test"
-        self.postgres_user = "brighthive"
-        self.postgres_password = "test_password"
-        self.postgres_db = "mci_dev"
 
     def setup_postgres_container(self):
         """Setup Docker PostgreSQL container.
@@ -53,9 +51,10 @@ class PostgreSQLContainer(object):
             name=self.container_name,
             ports={'5432/tcp': '5436'},
             environment=[
-                'POSTGRES_USER={}'.format(self.postgres_user),
-                'POSTGRES_PASSWORD={}'.format(self.postgres_password),
-                'POSTGRES_DB={}'.format(self.postgres_db)
+                'POSTGRES_USER={}'.format(config.POSTGRES_USER),
+                'POSTGRES_PASSWORD={}'.format(config.POSTGRES_PASSWORD),
+                'POSTGRES_DB={}'.format(config.POSTGRES_DATABASE),
+                'POSTGRES_HOSTNAME={}'.format(config.POSTGRES_HOSTNAME),
             ],
             tmpfs={'/tmp/mci_models.tar': ''},
         )
@@ -67,12 +66,7 @@ class PostgreSQLContainer(object):
         
         app.config.from_mapping(
             TESTING = True,
-            SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
-                self.postgres_user,
-                self.postgres_password,
-                'localhost',
-                5436,
-                self.postgres_db)
+            SQLALCHEMY_DATABASE_URI = config.SQLALCHEMY_DATABASE_URI,
         )
         
         applied_migrations = False
@@ -97,9 +91,7 @@ class PostgreSQLContainer(object):
                     retries += 1
                     sleep(SLEEP)
 
-        # A container with tables! Ready for population with fixtures!
-        psql_container = self.docker_client.containers.get('postgres_test')    
-
+        print('Container launched!')
 
     def teardown_postgres_container(self):
         """Teardown Dockerr PostgreSQL container.
@@ -113,7 +105,6 @@ class PostgreSQLContainer(object):
 
 @pytest.fixture()
 def psql_docker():
-    """Database container."""
     return PostgreSQLContainer()
 
 

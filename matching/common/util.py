@@ -2,7 +2,7 @@ from itertools import combinations
 
 from sqlalchemy import String, cast
 
-from matching.database import init_individual_table, init_db_session
+from matching.database import init_individual_table, Session
 
 def filter_on_ssn(combo, potential_matches, individual_table):
     '''
@@ -37,7 +37,6 @@ def compute_match_with_score(individual_args: dict):
 
     :returns: an Individual and a score of the match likelihood (or None) 
     '''
-    session = init_db_session()
     individual_table = init_individual_table()
     mci_id = ''
     score = ''
@@ -61,7 +60,7 @@ def compute_match_with_score(individual_args: dict):
         'gender_id': 0.05,
     }
 
-    potential_matches = session.query(individual_table).filter_by(
+    potential_matches = Session.query(individual_table).filter_by(
         last_name=individual_args['last_name'],
         date_of_birth=individual_args['date_of_birth']
     )

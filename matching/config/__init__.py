@@ -1,1 +1,1 @@
-from matching.config.config import Config, ConfigurationFactory
+from matching.config.config import Config, ConfigurationFactory, TestConfig
