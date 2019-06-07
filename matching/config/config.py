@@ -81,6 +81,6 @@ class ConfigurationFactory(object):
         Returns:
             object: Configuration object based on the configuration environment found in the `APP_ENV` environment variable.
         """
-        environment = os.getenv('APP_ENV', 'DEVELOPMENT')
+        environment = os.getenv('APP_ENV', 'TEST')
 
         return ConfigurationFactory.get_config(environment)
