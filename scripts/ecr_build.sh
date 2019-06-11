@@ -13,6 +13,10 @@ ECR_BASE=396527728813.dkr.ecr.us-east-2.amazonaws.com
 docker build -t $CONTAINER_NAME:$CONTAINER_VERSION .
 docker tag $CONTAINER_NAME:$CONTAINER_VERSION $CONTAINER_NAME:latest
 
+# Tag the Containers
+docker tag $CONTAINER_NAME:$CONTAINER_VERSION $ECR_BASE/$CONTAINER_NAME:$CONTAINER_VERSION
+docker tag $CONTAINER_NAME:latest $ECR_BASE/$CONTAINER_NAME:latest
+
 # Login to ECR
 $(aws ecr get-login --no-include-email --region us-east-2)
 
