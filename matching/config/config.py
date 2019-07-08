@@ -1,8 +1,10 @@
 import os
 
+
 class Config(object):
     DEBUG = False
     TESTING = False
+
 
 class DevelopmentConfig(Config):
     def __init__(self):
@@ -15,10 +17,10 @@ class DevelopmentConfig(Config):
     POSTGRES_PASSWORD = 'test_password'
     POSTGRES_DATABASE = 'mci_dev'
     POSTGRES_PORT = '5432'
-    # POSTGRES_HOSTNAME = 'localhost' 
+    # POSTGRES_HOSTNAME = 'localhost'
     POSTGRES_HOSTNAME = 'docker_postgres_mci_1'
-    # If the matching-service is running in a Docker container, then connect to the 
-    # mci psql container, rather than localhost. 
+    # If the matching-service is running in a Docker container, then connect to the
+    # mci psql container, rather than localhost.
     SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
         POSTGRES_USER,
         POSTGRES_PASSWORD,
@@ -48,6 +50,27 @@ class TestConfig(Config):
         POSTGRES_DATABASE
     )
 
+
+class ProductionConfig(Config):
+    def __init__(self):
+        super().__init__()
+        os.environ['FLASK_ENV'] = 'production'
+
+    DEBUG = False
+    POSTGRES_USER = os.getenv('POSTGRES_USER', 'brighthive')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'test_password')
+    POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE', 'mci_test')
+    POSTGRES_HOSTNAME = os.getenv('POSTGRES_HOSTNAME', 'localhost')
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
+        POSTGRES_USER,
+        POSTGRES_PASSWORD,
+        POSTGRES_HOSTNAME,
+        POSTGRES_PORT,
+        POSTGRES_DATABASE
+    )
+
+
 class ConfigurationFactory(object):
     """Application configuration factory.
     This factoty class provides a quick and easy mechanism for retrieving a specific configuration
@@ -72,6 +95,8 @@ class ConfigurationFactory(object):
             return TestConfig()
         elif config_type.upper() == 'DEVELOPMENT':
             return DevelopmentConfig()
+        elif config_type.upper() == 'PRODUCTION':
+            return ProductionConfig()
 
     @staticmethod
     def from_env():
