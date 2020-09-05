@@ -17,7 +17,7 @@ webargs = "*"
 flask-sqlalchemy = "*"
 sqlalchemy = "*"
 psycopg2-binary = "*"
-mci-database = {editable = true,git = "http://github.com/brighthive/mci-database.git"}
+mci-database = {editable = true,git = "https://github.com/brighthive/mci-database.git",ref = "master"}
 
 [requires]
 python_version = "3.7"
