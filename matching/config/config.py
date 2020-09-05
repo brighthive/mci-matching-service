@@ -30,6 +30,26 @@ class DevelopmentConfig(Config):
     )
 
 
+class SandboxConfig(Config):
+    def __init__(self):
+        super().__init__()
+        os.environ['FLASK_ENV'] = 'production'
+
+    DEBUG = False
+
+    POSTGRES_USER = os.getenv('POSTGRES_USER','brighthive')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'test_password')
+    POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE','mci_dev')
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT', 5432)
+    POSTGRES_HOSTNAME = os.getenv('POSTGRES_HOSTNAME','localhost')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
+        POSTGRES_USER,
+        POSTGRES_PASSWORD,
+        POSTGRES_HOSTNAME,
+        POSTGRES_PORT,
+        POSTGRES_DATABASE
+    )
+
 class TestConfig(Config):
     def __init__(self):
         super().__init__()
@@ -95,6 +115,8 @@ class ConfigurationFactory(object):
             return TestConfig()
         elif config_type.upper() == 'DEVELOPMENT':
             return DevelopmentConfig()
+        elif  config_type.upper() == 'SANDBOX':
+            return SandboxConfig()
         elif config_type.upper() == 'PRODUCTION':
             return ProductionConfig()
 
