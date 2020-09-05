@@ -1,10 +1,12 @@
 #!/bin/bash
 
-MAX_RETRIES=5
+if [ -z $WORKERS ]; then
+    WORKERS=4
+fi
+
 
 if [ "$APP_ENV" == "DEVELOPMENT" ] || [ -z "$APP_ENV" ]; then
-    # docker-compose.yml sets the APP_ENV
-    gunicorn -b 0.0.0.0 matching:app --reload --log-level=DEBUG --timeout 240
+    gunicorn -b 0.0.0.0 matching:app -w $WORKERS --worker-class gevent --reload --log-level=DEBUG --timeout 240
 else
-    gunicorn -b 0.0.0.0 matching:app --reload
+    gunicorn -b 0.0.0.0 matching:app -w $WORKERS --worker-class gevent 
 fi

@@ -37,11 +37,11 @@ class SandboxConfig(Config):
 
     DEBUG = False
 
-    POSTGRES_USER = os.getenv('POSTGRES_USER','brighthive')
+    POSTGRES_USER = os.getenv('POSTGRES_USER', 'brighthive')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'test_password')
-    POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE','mci_dev')
+    POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE', 'mci_dev')
     POSTGRES_PORT = os.getenv('POSTGRES_PORT', 5432)
-    POSTGRES_HOSTNAME = os.getenv('POSTGRES_HOSTNAME','localhost')
+    POSTGRES_HOSTNAME = os.getenv('POSTGRES_HOSTNAME', 'localhost')
     SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
         POSTGRES_USER,
         POSTGRES_PASSWORD,
@@ -49,6 +49,7 @@ class SandboxConfig(Config):
         POSTGRES_PORT,
         POSTGRES_DATABASE
     )
+
 
 class TestConfig(Config):
     def __init__(self):
@@ -89,6 +90,13 @@ class ProductionConfig(Config):
         POSTGRES_PORT,
         POSTGRES_DATABASE
     )
+    # AWS Configuration for CloudWatch
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', None)
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', None)
+    AWS_REGION_NAME = os.getenv('AWS_REGION_NAME', None)
+    AWS_LOG_GROUP = os.getenv('AWS_LOG_GROUP', None)
+    AWS_LOG_STREAM = os.getenv('AWS_LOG_STREAM', None)
+    AWS_LOGGER_NAME = os.getenv('AWS_LOGGER_NAME', None)
 
 
 class ConfigurationFactory(object):
@@ -115,7 +123,7 @@ class ConfigurationFactory(object):
             return TestConfig()
         elif config_type.upper() == 'DEVELOPMENT':
             return DevelopmentConfig()
-        elif  config_type.upper() == 'SANDBOX':
+        elif config_type.upper() == 'SANDBOX':
             return SandboxConfig()
         elif config_type.upper() == 'PRODUCTION':
             return ProductionConfig()

@@ -18,6 +18,9 @@ flask-sqlalchemy = "*"
 sqlalchemy = "*"
 psycopg2-binary = "*"
 mci-database = {editable = true,git = "https://github.com/brighthive/mci-database.git",ref = "master"}
+watchtower = "*"
+gevent = "*"
+boto3 = "*"
 
 [requires]
 python_version = "3.7"
