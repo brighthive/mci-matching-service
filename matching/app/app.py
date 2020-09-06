@@ -32,7 +32,7 @@ try:
     region_name = os.getenv('AWS_REGION_NAME')
     logging.getLogger().setLevel(logging.INFO)
     boto3_session = boto3.Session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
-                                  region_name=region_name)
+                                  region_name=region_name)  
     logger = logging.getLogger(__name__)
     handler = watchtower.CloudWatchLogHandler(
         boto3_session=boto3_session, log_group=os.getenv('AWS_LOG_GROUP'), stream_name=os.getenv('AWS_LOG_STREAM'))
