@@ -91,12 +91,12 @@ class ProductionConfig(Config):
         POSTGRES_DATABASE
     )
     # AWS Configuration for CloudWatch
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', None)
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', None)
-    AWS_REGION_NAME = os.getenv('AWS_REGION_NAME', None)
-    AWS_LOG_GROUP = os.getenv('AWS_LOG_GROUP', None)
-    AWS_LOG_STREAM = os.getenv('AWS_LOG_STREAM', None)
-    AWS_LOGGER_NAME = os.getenv('AWS_LOGGER_NAME', None)
+    # AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', None)
+    # AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', None)
+    # AWS_REGION_NAME = os.getenv('AWS_REGION_NAME', None)
+    # AWS_LOG_GROUP = os.getenv('AWS_LOG_GROUP', None)
+    # AWS_LOG_STREAM = os.getenv('AWS_LOG_STREAM', None)
+    # AWS_LOGGER_NAME = os.getenv('AWS_LOGGER_NAME', None)
 
 
 class ConfigurationFactory(object):
