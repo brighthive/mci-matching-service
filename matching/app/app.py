@@ -64,10 +64,7 @@ def after_request(response):
         'status': response.status,
         'content_length': response.content_length,
         'user_agent': str(request.user_agent),
-        'payload': {
-            'last_name': request.json['last_name'] if 'last_name' in request.json else '',
-            'gender_id': request.json['gender_id'] if 'gender_id' in request.json else ''
-        }
+        'payload': response.json
     }
     if info['status_code'] >= 200 and info['status_code'] < 300:
         logger.info(info)
