@@ -2,6 +2,7 @@
 This module houses the core Flask application.
 """
 
+import os
 import json
 import logging
 import watchtower
@@ -28,13 +29,13 @@ formatter = logging.Formatter(
 try:
     logging.getLogger().setLevel(logging.INFO)
     boto3_session = Session(
-        aws_access_key_id=config.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
-        region_name=config.AWS_REGION_NAME
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+        region_name=os.getenv('AWS_REGION_NAME')
     )
     logger = logging.getLogger(config.AWS_LOGGER_NAME)
     handler = watchtower.CloudWatchLogHandler(
-        boto3_session=boto3_session, log_group=config.AWS_LOG_GROUP, stream_name=config.AWS_LOG_STREAM)
+        boto3_session=boto3_session, log_group=os.getenv('AWS_LOG_GROUP'), stream_name=os.getenv('AWS_LOG_STREAM'))
     formatter = logging.Formatter(
         fmt='[%(asctime)s] [%(levelname)s] %(message)s', datefmt="%a, %d %b %Y %H:%M:%S")
     handler.setFormatter(formatter)
