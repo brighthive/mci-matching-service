@@ -5,8 +5,8 @@ This module houses the core Flask application.
 import os
 import json
 import logging
+import boto3.session
 import watchtower
-from boto3.session import Session
 from flask import Flask, g, request
 from datetime import datetime
 from flask_restful import Api
@@ -27,13 +27,13 @@ formatter = logging.Formatter(
     fmt='[%(asctime)s] [%(levelname)s] %(message)s', datefmt="%a, %d %b %Y %H:%M:%S")
 
 try:
+    aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+    region_name = os.getenv('AWS_REGION_NAME')
     logging.getLogger().setLevel(logging.INFO)
-    boto3_session = Session(
-        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-        region_name=os.getenv('AWS_REGION_NAME')
-    )
-    logger = logging.getLogger(config.AWS_LOGGER_NAME)
+    boto3_session = boto3.Session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+                                  region_name=region_name)
+    logger = logging.getLogger(__name__)
     handler = watchtower.CloudWatchLogHandler(
         boto3_session=boto3_session, log_group=os.getenv('AWS_LOG_GROUP'), stream_name=os.getenv('AWS_LOG_STREAM'))
     formatter = logging.Formatter(
