@@ -24,9 +24,9 @@ api.add_resource(ComputeMatch, '/compute-match')
 # logger configuration
 formatter = logging.Formatter(
     fmt='[%(asctime)s] [%(levelname)s] %(message)s', datefmt="%a, %d %b %Y %H:%M:%S")
-logging.getLogger().setLevel(logging.INFO)
 
 try:
+    logging.getLogger().setLevel(logging.INFO)
     boto3_session = Session(
         aws_access_key_id=config.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
@@ -41,11 +41,14 @@ try:
     handler.setLevel(logging.INFO)
     logger.addHandler(handler)
 except Exception as e:
+    logging.getLogger().setLevel(logging.INFO)
     logger = logging.getLogger(__name__)
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     handler.setLevel(logging.INFO)
     logger.addHandler(handler)
+    logger.warning(
+        f'Failed to configure CloudWatch due to the following error: {str(e)}')
 
 
 @app.after_request
@@ -59,7 +62,11 @@ def after_request(response):
         'status_code': response.status_code,
         'status': response.status,
         'content_length': response.content_length,
-        'user_agent': str(request.user_agent)
+        'user_agent': str(request.user_agent),
+        'payload': {
+            'last_name': request.json['last_name'] if 'last_name' in request.json else '',
+            'gender': request.json['gender'] if 'gender' in request.json else ''
+        }
     }
     if info['status_code'] >= 200 and info['status_code'] < 300:
         logger.info(info)
